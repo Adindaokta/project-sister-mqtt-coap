@@ -13,7 +13,7 @@ DUMMY_PAYLOAD = "X" * (PAYLOAD_SIZE_KB * 1024)
 def run_mqtt_sender(rate_per_sec, duration_sec):
     log_file = init_csv("mqtt_pub_sent.csv", ["msg_id", "sequence", "sent_ts"])
     client = mqtt.Client()
-    client.connect("127.0.0.1", 1883, 60)
+    client.connect("172.16.48.114", 1883, 60)
     
     total_messages = rate_per_sec * duration_sec
     interval = 1.0 / rate_per_sec
@@ -64,7 +64,7 @@ async def run_coap_sender(rate_per_sec, duration_sec):
         request = aiocoap.Message(
             code=aiocoap.POST, 
             payload=json.dumps(payload).encode(), 
-            uri='coap://127.0.0.1/sensor/to_mqtt'
+            uri='coap://172.16.48.114:5683/sensor/to_mqtt'
         )
         try:
             await context.request(request).response
