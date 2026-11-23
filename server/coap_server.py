@@ -1,5 +1,6 @@
 import asyncio
 import json
+from logging import root
 import sys
 import os
 import aiocoap
@@ -34,7 +35,7 @@ async def main():
     root.add_resource(["sensor", "from_mqtt"], SensorResource("from_mqtt"))
     root.add_resource(["sensor", "to_mqtt"], SensorResource("to_mqtt"))
 
-    await aiocoap.Context.create_server_context(root, bind=("172.16.48.114", 5683))
+    await aiocoap.Context.create_server_context(root, bind=("127.0.0.1", 5683))
     print("[CoAP Server] Berjalan di 127.0.0.1:5683 (UDP)...")
     await asyncio.get_running_loop().create_future()
 

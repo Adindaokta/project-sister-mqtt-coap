@@ -64,7 +64,7 @@ async def run_coap_sender(rate_per_sec, duration_sec):
         request = aiocoap.Message(
             code=aiocoap.POST, 
             payload=json.dumps(payload).encode(), 
-            uri='coap://172.16.48.114:5683/sensor/to_mqtt'
+            uri='coap://127.0.0.1:5683/sensor/to_mqtt'
         )
         try:
             await context.request(request).response

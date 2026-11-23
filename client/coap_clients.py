@@ -13,7 +13,7 @@ async def verify_coap_resource():
     print("[CoAP GET Client] Memantau resource /sensor/from_mqtt...")
     
     while True:
-        request = aiocoap.Message(code=aiocoap.GET, uri='coap://127.0.0.1/sensor/from_mqtt')
+        request = aiocoap.Message(code=aiocoap.GET, uri='coap://172.16.48.114:5683/sensor/to_mqtt')
         try:
             response = await context.request(request).response
             recv_ts = time.time()
