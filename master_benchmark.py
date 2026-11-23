@@ -15,8 +15,8 @@ import paho.mqtt.client as mqtt
 # Ubah DURATION_SEC = 600 dan REPETITIONS = 10 untuk eksperimen penuh (R1 & R2).
 # Untuk uji coba cepat dulu, set DURATION_SEC = 10 dan REPETITIONS = 1.
 # ==============================================================================
-DURATION_SEC = 600      # 600 detik = 10 menit sesuai matriks R1 & R2
-REPETITIONS = 10        # 10 pengulangan sesuai matriks R1 & R2
+DURATION_SEC = 60     # 600 detik = 10 menit sesuai matriks R1 & R2
+REPETITIONS = 1       # 10 pengulangan sesuai matriks R1 & R2
 RATES = {"R1": 10, "R2": 20}
 PAYLOAD_SIZE_KB = 10
 DUMMY_PAYLOAD = "X" * (PAYLOAD_SIZE_KB * 1024)
@@ -95,9 +95,18 @@ async def send_coap_traffic(rate_per_sec, duration_sec):
     total_messages = rate_per_sec * duration_sec
     interval = 1.0 / rate_per_sec
     start_time = time.perf_counter()
+    tasks = []
 
     with open(sent_csv, "w", encoding="utf-8") as f:
         f.write("msg_id,sequence,sent_ts\n")
+
+        async def fire_coap(req, m_id, s_num, s_ts):
+            try:
+                await context.request(req).response
+                f.write(f"{m_id},{s_num},{s_ts}\n")
+            except Exception:
+                pass
+
         for seq in range(1, total_messages + 1):
             msg_id = f"coap-{seq:06d}"
             sent_ts = time.time()
@@ -113,18 +122,17 @@ async def send_coap_traffic(rate_per_sec, duration_sec):
                 payload=json.dumps(payload).encode("utf-8"),
                 uri="coap://127.0.0.1:5683/sensor/to_mqtt"
             )
-            try:
-                await context.request(request).response
-                f.write(f"{msg_id},{seq},{sent_ts}\n")
-            except Exception:
-                pass
+            tasks.append(asyncio.create_task(fire_coap(request, msg_id, seq, sent_ts)))
 
             target_time = start_time + (seq * interval)
             sleep_time = target_time - time.perf_counter()
             if sleep_time > 0:
                 await asyncio.sleep(sleep_time)
 
-    await asyncio.sleep(2.0)  # Tunggu siklus polling GET terakhir
+        if tasks:
+            await asyncio.gather(*tasks, return_exceptions=True)
+
+    await asyncio.sleep(2.0)  # Tunggu siklus polling GET terakhir  # Tunggu siklus polling GET terakhir
 
 def run_all_experiments():
     os.makedirs(RESULTS_DIR, exist_ok=True)
