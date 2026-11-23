@@ -1,0 +1,5 @@
+paho-mqtt
+aiocoap
+psutil
+pandas
+matplotlib
